@@ -1,0 +1,88 @@
+---
+title: "Survey Report"
+format: html
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+library(tidyverse)
+library(gt)
+```
+
+```{r}
+# source("data-raw/import-data.R")
+```
+
+```{r}
+demographics_data <-
+  read_rds("data/demographics_data.rds")
+
+favorite_parts_data <-
+  read_rds("data/favorite_parts_data.rds")
+
+pre_post_data <-
+  read_rds("data/pre_post_data.rds")
+
+satisfaction_data <-
+  read_rds("data/satisfaction_data.rds")
+```
+
+# Introduction
+
+We did a survey after our trainings. Here is a table showing the demographics of participants.
+
+```{r}
+demographics_data |>
+  gt() |>
+  opt_interactive()
+```
+
+# Findings
+
+```{r}
+favorite_parts_data |>
+  left_join(
+    demographics_data,
+    join_by(respondent_id, survey_year)
+  ) |>
+  count(city, favorite_part) |>
+  gt() |>
+  opt_interactive()
+```
+
+```{r}
+favorite_parts_data |>
+  count(survey_year, favorite_part) |>
+  gt() |>
+  opt_interactive()
+```
+
+```{r}
+favorite_parts_by_city <-
+  favorite_parts_data |>
+  left_join(
+    demographics_data,
+    join_by(respondent_id, survey_year)
+  ) |>
+  count(city, favorite_part)
+
+favorite_parts_by_city_plot <- function(city_name) {
+  favorite_parts_by_city |>
+    filter(city == city_name) |> 
+    ggplot(
+      aes(
+        x = n,
+        y = favorite_part
+      )
+    ) +
+    geom_col()
+}
+
+favorite_parts_by_city_plot(city_name = "Portland")
+```
+
+
+# Conclusion
